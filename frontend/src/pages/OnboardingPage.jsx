@@ -173,7 +173,15 @@ const OnboardingPage = () => {
             <button className="btn btn-primary w-full" disabled={isPending} type="submit">
               {!isPending ? (
                 <>
-                  <ShipWheelIcon className="size-5 mr-2" />
+                  
+                  <div className="mb-4 flex items-center justify-start gap-2">
+                    <img 
+                      src="/vibechat.png" 
+                      alt="VibeChat Logo" 
+                      className="size-9" 
+                    />
+                    
+                  </div>
                   Complete Onboarding
                 </>
               ) : (

@@ -25,10 +25,16 @@ const Navbar = () => {
           {isChatPage && (
             <div className="pl-5">
               <Link to="/" className="flex items-center gap-2.5">
-                <ShipWheelIcon className="size-9 text-primary" />
-                <span className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary  tracking-wider">
-                  Streamify
-                </span>
+                <div className="mb-4 flex items-center justify-start gap-2">
+                  <img 
+                    src="/vibechat.png" 
+                    alt="VibeChat Logo" 
+                    className="size-9" 
+                  />
+                  <span className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 tracking-wider">
+                    vibechat
+                  </span>
+                </div>
               </Link>
             </div>
           )}

@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router";
-
 import HomePage from "./pages/HomePage.jsx";
+import FriendsPage from "./pages/FriendsPage.jsx"; // Add this import
 import SignUpPage from "./pages/SignUpPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import NotificationsPage from "./pages/NotificationsPage.jsx";
@@ -10,9 +10,7 @@ import OnboardingPage from "./pages/OnboardingPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import ValidateOTPPage from "./pages/ValidateOTPPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
-
 import { Toaster } from "react-hot-toast";
-
 import PageLoader from "./components/PageLoader.jsx";
 import useAuthUser from "./hooks/useAuthUser.js";
 import Layout from "./components/Layout.jsx";
@@ -36,6 +34,20 @@ const App = () => {
             isAuthenticated && isOnboarded ? (
               <Layout showSidebar={true}>
                 <HomePage />
+              </Layout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
+            )
+          }
+        />
+        
+        {/* Add Friends Route */}
+        <Route
+          path="/friends"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <Layout showSidebar={true}>
+                <FriendsPage />
               </Layout>
             ) : (
               <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
@@ -77,7 +89,6 @@ const App = () => {
             )
           }
         />
-
         <Route
           path="/chat/:id"
           element={
@@ -90,7 +101,6 @@ const App = () => {
             )
           }
         />
-
         <Route
           path="/onboarding"
           element={
@@ -105,32 +115,28 @@ const App = () => {
             )
           }
         />
-        // Add these routes inside your Routes component in App.jsx
-
-      <Route
-        path="/forgot-password"
-        element={
-          !isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />
-        }
-      />
-      <Route
-        path="/validate-otp"
-        element={
-          !isAuthenticated ? <ValidateOTPPage /> : <Navigate to="/" />
-        }
-      />
-      <Route
-        path="/reset-password"
-        element={
-          !isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/" />
-        }
-      />
+        <Route
+          path="/forgot-password"
+          element={
+            !isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />
+          }
+        />
+        <Route
+          path="/validate-otp"
+          element={
+            !isAuthenticated ? <ValidateOTPPage /> : <Navigate to="/" />
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            !isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/" />
+          }
+        />
       </Routes>
-
-      
-
       <Toaster />
     </div>
   );
 };
+
 export default App;
