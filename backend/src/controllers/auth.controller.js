@@ -1,7 +1,9 @@
 import { upsertStreamUser } from "../lib/stream.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-
+import OTP from "../models/OTP.js";
+import { sendOTPEmail } from "../utils/email.js";
+import { generateOTP, isOTPExpired } from "../utils/otp.js";
 export async function signup(req, res) {
   const { email, password, fullName } = req.body;
 
@@ -145,6 +147,146 @@ export async function onboard(req, res) {
     res.status(200).json({ success: true, user: updatedUser });
   } catch (error) {
     console.error("Onboarding error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+export async function forgotPassword(req, res) {
+  const { email } = req.body;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      // For security reasons, don't reveal if email exists or not
+      return res.status(200).json({ 
+        success: true, 
+        message: "If the email exists, a password reset OTP has been sent." 
+      });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Delete any existing OTPs for this email
+    await OTP.deleteMany({ email });
+
+    // Save new OTP
+    await OTP.create({
+      email,
+      otp,
+      expiresAt,
+    });
+
+    // Send OTP via email
+    await sendOTPEmail(email, otp);
+
+    res.status(200).json({ 
+      success: true, 
+      message: "If the email exists, a password reset OTP has been sent." 
+    });
+  } catch (error) {
+    console.log("Error in forgotPassword controller", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+export async function validateOTP(req, res) {
+  const { email, otp } = req.body;
+
+  try {
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    // Find the most recent OTP for this email
+    const otpRecord = await OTP.findOne({ 
+      email, 
+      used: false 
+    }).sort({ createdAt: -1 });
+
+    if (!otpRecord) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // Check if OTP matches
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Check if OTP is expired
+    if (isOTPExpired(otpRecord.expiresAt)) {
+      await OTP.findByIdAndUpdate(otpRecord._id, { used: true });
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    // Mark OTP as used (but don't delete it yet, we'll use it in reset password)
+    await OTP.findByIdAndUpdate(otpRecord._id, { used: true });
+
+    res.status(200).json({ 
+      success: true, 
+      message: "OTP validated successfully" 
+    });
+  } catch (error) {
+    console.log("Error in validateOTP controller", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+export async function resetPassword(req, res) {
+  const { email, otp, newPassword } = req.body;
+
+  try {
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ 
+        message: "Email, OTP, and new password are required" 
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ 
+        message: "Password must be at least 6 characters" 
+      });
+    }
+
+    // Verify OTP one more time for security
+    const otpRecord = await OTP.findOne({ 
+      email, 
+      otp,
+      used: true 
+    }).sort({ createdAt: -1 });
+
+    if (!otpRecord) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    if (isOTPExpired(otpRecord.expiresAt)) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    // Find user and update password
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update password (the pre-save hook will hash it automatically)
+    user.password = newPassword;
+    await user.save();
+
+    // Delete the used OTP
+    await OTP.findByIdAndDelete(otpRecord._id);
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Password reset successfully" 
+    });
+  } catch (error) {
+    console.log("Error in resetPassword controller", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 }

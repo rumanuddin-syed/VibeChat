@@ -63,4 +63,23 @@ export async function getStreamToken() {
   const response = await axiosInstance.get("/chat/token");
   return response.data;
 }
+// Add these to your existing auth functions in lib/api.js
 
+export const forgotPassword = async (email) => {
+  const response = await axiosInstance.post("/auth/forgot-password", { email });
+  return response.data;
+};
+
+export const validateOTP = async (email, otp) => {
+  const response = await axiosInstance.post("/auth/validate-otp", { email, otp });
+  return response.data;
+};
+
+export const resetPassword = async (email, otp, newPassword) => {
+  const response = await axiosInstance.post("/auth/reset-password", {
+    email,
+    otp,
+    newPassword,
+  });
+  return response.data;
+};

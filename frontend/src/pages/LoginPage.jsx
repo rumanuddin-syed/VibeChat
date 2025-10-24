@@ -90,6 +90,12 @@ const LoginPage = () => {
                     />
                   </div>
 
+                  <div className="text-center mt-2">
+                    <Link to="/forgot-password" className="text-primary hover:underline text-sm">
+                      Forgot your password?
+                    </Link>
+                  </div>
+
                   <button type="submit" className="btn btn-primary w-full" disabled={isPending}>
                     {isPending ? (
                       <>
