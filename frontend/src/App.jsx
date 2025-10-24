@@ -7,7 +7,9 @@ import NotificationsPage from "./pages/NotificationsPage.jsx";
 import CallPage from "./pages/CallPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import OnboardingPage from "./pages/OnboardingPage.jsx";
-
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import ValidateOTPPage from "./pages/ValidateOTPPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 
 import { Toaster } from "react-hot-toast";
 
@@ -103,7 +105,29 @@ const App = () => {
             )
           }
         />
+        // Add these routes inside your Routes component in App.jsx
+
+      <Route
+        path="/forgot-password"
+        element={
+          !isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />
+        }
+      />
+      <Route
+        path="/validate-otp"
+        element={
+          !isAuthenticated ? <ValidateOTPPage /> : <Navigate to="/" />
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          !isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/" />
+        }
+      />
       </Routes>
+
+      
 
       <Toaster />
     </div>
